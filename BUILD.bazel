@@ -1,0 +1,32 @@
+
+cc_library(
+	name = "thread",
+	visibility = ["//visibility:public"],
+	includes = [
+		"include/",
+	],
+	hdrs = glob([
+		"include/boost/**/*.hpp",
+		"include/boost/**/*.ipp",
+	]),
+	srcs = glob([
+		"src/**/*.cpp",
+		"src/**/*.hpp",
+		"src/**/*.c",
+		"src/**/*.h",
+	]),
+	defines = [
+		"BOOST_ALL_NO_LIB=1"
+	],
+	deps = [
+		"@com_github_bazelboost_config//:config",
+		"@com_github_bazelboost_core//:core",
+		"@com_github_bazelboost_type_traits//:type_traits",
+		"@com_github_bazelboost_atomic//:atomic",
+		"@com_github_bazelboost_chrono//:chrono",
+		"@com_github_bazelboost_assert//:assert",
+		"@com_github_bazelboost_throw_exception//:throw_exception",
+		"@com_github_bazelboost_date_time//:date_time",
+		"@com_github_bazelboost_detail//:detail"
+	],
+)
