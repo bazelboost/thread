@@ -1,0 +1,7 @@
+common --enable_platform_specific_config
+
+build:windows --platforms=//:ci_windows
+build:windows --extra_toolchains=@local_config_cc//:cc-toolchain-x64_x86_windows
+
+build:linux --platforms=//:ci_linux
+build:linux --extra_toolchains=@local_config_cc//:cc-compiler-k8

@@ -1,0 +1,110 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+_detail_hdrs = ["include/boost/thread/detail/*.hpp"]
+_win32_hdrs = ["include/boost/thread/win32/*.hpp"]
+_pthread_hdrs = ["include/boost/thread/pthread/*.hpp"]
+
+constraint_setting(
+    name = "threadapi",
+    visibility = ["//visibility:public"],
+)
+
+constraint_value(
+    name = "threadapi_pthread",
+    visibility = ["//visibility:public"],
+    constraint_setting = "threadapi",
+)
+
+constraint_value(
+    name = "threadapi_win32",
+    visibility = ["//visibility:public"],
+    constraint_setting = "threadapi",
+)
+
+cc_library(
+    name = "detail",
+    includes = ["include"],
+    hdrs = glob(_detail_hdrs),
+    deps = [
+        "@boost//chrono",
+        "@boost//bind",
+        "@boost//tuple",
+    ],
+)
+
+cc_library(
+    name = "pthread_impl",
+    tags = ["manual"],
+    includes = ["include"],
+    hdrs = glob(_pthread_hdrs),
+    srcs = glob(["src/pthread/*.cpp"]),
+)
+
+cc_library(
+    name = "win32_impl",
+    target_compatible_with = [":threadapi_win32"],
+    includes = ["include"],
+    hdrs = glob(_win32_hdrs),
+    srcs = glob(["src/win32/*.cpp"]),
+    deps = [
+        "@boost//winapi",
+        "@boost//atomic",
+        "@boost//system",
+        "@boost//throw_exception",
+        "@boost//date_time",
+        "@boost//smart_ptr",
+        "@boost//chrono",
+        "@boost//bind",
+        "@boost//tuple",
+        "@boost//exception",
+        "@boost//optional",
+        "@boost//function",
+    ],
+)
+
+cc_library(
+    name = "thread",
+    visibility = ["//visibility:public"],
+    includes = ["include"],
+    hdrs = glob(["include/boost/**/*.hpp"], exclude = _detail_hdrs + _win32_hdrs + _pthread_hdrs),
+    srcs = glob(["src/*.cpp"]),
+    linkopts = select({
+        ":threadapi_win32": [],
+        ":threadapi_pthread": ["-lpthread"],
+    }),
+    deps = [
+        ":detail",
+        "@boost//core",
+        "@boost//system",
+        "@boost//type_traits",
+        "@boost//date_time",
+        "@boost//exception",
+        "@boost//optional",
+        "@boost//function",
+    ] + select({
+        ":threadapi_win32": [":win32_impl"],
+        ":threadapi_pthread": [":pthread_impl"],
+    }),
+)
+
+# These platforms are only for the CI. You must define your own platforms for
+# your project
+platform(
+    name = "ci_windows",
+    constraint_values = [
+        ":threadapi_win32",
+        "@platforms//cpu:x86_64",
+        "@platforms//os:windows",
+        "@bazel_tools//tools/cpp:msvc",
+    ],
+)
+
+platform(
+    name = "ci_linux",
+    constraint_values = [
+        ":threadapi_pthread",
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+        "@bazel_tools//tools/cpp:gcc",
+    ],
+)
