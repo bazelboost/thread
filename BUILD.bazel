@@ -68,7 +68,7 @@ cc_library(
     includes = ["include"],
     hdrs = glob(["include/boost/**/*.hpp"], exclude = _detail_hdrs + _win32_hdrs + _pthread_hdrs),
     srcs = glob(["src/*.cpp"]),
-    defines = ["BOOST_ALL_NO_LIB"],
+    defines = ["BOOST_ALL_NO_LIB", "BOOST_THREAD_BUILD_LIB", "BOOST_THREAD_USE_LIB"],
     linkopts = select({
         ":threadapi_win32": [],
         ":threadapi_pthread": ["-lpthread"],
