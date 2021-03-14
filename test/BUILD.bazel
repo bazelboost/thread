@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+cc_test(
+    name = "test_2501",
+    srcs = ["test_2501.cpp"],
+    deps = ["//:thread"],
+)
