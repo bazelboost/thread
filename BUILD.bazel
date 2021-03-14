@@ -29,15 +29,29 @@ cc_library(
         "@boost//chrono",
         "@boost//bind",
         "@boost//tuple",
+        "@boost//move",
     ],
 )
 
 cc_library(
     name = "pthread_impl",
-    tags = ["manual"],
+    target_compatible_with = [":threadapi_pthread"],
     includes = ["include"],
-    hdrs = glob(_pthread_hdrs),
-    srcs = glob(["src/pthread/*.cpp"]),
+    defines = ["BOOST_THREAD_DONT_USE_CHRONO"],
+    linkopts = ["-lpthread"],
+    hdrs = glob(_pthread_hdrs) + ["src/pthread/once_atomic.cpp"],
+    srcs = glob(["src/pthread/*.cpp"], exclude = ["src/pthread/once_atomic.cpp"]),
+    deps = [
+        ":thread_hdrs",
+        ":detail",
+        "@boost//date_time",
+        "@boost//atomic",
+        "@boost//smart_ptr",
+        "@boost//exception",
+        "@boost//optional",
+        "@boost//function",
+        "@boost//math",
+    ],
 )
 
 cc_library(
@@ -63,18 +77,22 @@ cc_library(
 )
 
 cc_library(
-    name = "thread",
+    name = "thread_hdrs",
     visibility = ["//visibility:public"],
     includes = ["include"],
     hdrs = glob(["include/boost/**/*.hpp"], exclude = _detail_hdrs + _win32_hdrs + _pthread_hdrs),
+    defines = ["BOOST_ALL_NO_LIB", "BOOST_THREAD_BUILD_LIB", "BOOST_THREAD_USE_LIB"],
+)
+
+cc_library(
+    name = "thread",
+    visibility = ["//visibility:public"],
+    includes = ["include"],
     srcs = glob(["src/*.cpp"]),
     defines = ["BOOST_ALL_NO_LIB", "BOOST_THREAD_BUILD_LIB", "BOOST_THREAD_USE_LIB"],
-    linkopts = select({
-        ":threadapi_win32": [],
-        ":threadapi_pthread": ["-lpthread"],
-    }),
     deps = [
         ":detail",
+        ":thread_hdrs",
         "@boost//core",
         "@boost//system",
         "@boost//type_traits",
