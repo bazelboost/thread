@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+cc_binary(
+    name = "ba_externallly_locked",
+    srcs = ["ba_externallly_locked.cpp"],
+    deps = ["//:thread"],
+)
